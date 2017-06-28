@@ -73,12 +73,12 @@ app.post('/signin', function(req, res) {
 app.get('/me', ensureAuthorized, function(req, res) {
     var user;
     for (var i = 0; i < users.length; i++) {
-        console.log("token bd: "+users[i].token+" --> token app: "+req.token);
         if(users[i].token === req.token){
             user=users[i];
         }
     }
-    res.json({type: true,
+    res.json({
+        type: true,
         data: user
     });
 });
@@ -95,6 +95,25 @@ function ensureAuthorized(req, res, next) {
         res.send(403);
     }
 }
+
+app.get('/obtainRecRest', function(req, res){
+    //TODO: llamada a la base de datos para obtener restaurantes recomendados
+    var recRest=[{
+        nombre: "La Tablita del Tártaro",
+        categoria: "Parrilladas",
+        calificacion: 4,
+        img: "http://www.latablitadeltartaro.com/wp-content/uploads/2016/07/tablita_del_tartaro.png"
+    },{
+        nombre: "La Tablita del Tártaro",
+        categoria: "Parrilladas",
+        calificacion: 4,
+        img: "http://www.latablitadeltartaro.com/wp-content/uploads/2016/07/tablita_del_tartaro.png"
+    }];
+
+    res.json({
+        data: recRest
+    });
+});
 
 process.on('uncaughtException', function(err) {
 	console.log(err);
