@@ -71,24 +71,20 @@ app.post('/signin', function(req, res) {
 });
 
 app.get('/me', ensureAuthorized, function(req, res) {
-	/*User.findOne({token: req.token}, function(err, user) {
-        if (err) {
-            res.json({
-                type: false,
-                data: "Error occured: " + err
-            });
-        } else {
-            res.json({
-                type: true,
-                data: user
-            });
+    var user;
+    for (var i = 0; i < users.length; i++) {
+        console.log("token bd: "+users[i].token+" --> token app: "+req.token);
+        if(users[i].token === req.token){
+            user=users[i];
         }
-    });*/
+    }
+    res.json({type: true,
+        data: user
+    });
 });
 
 function ensureAuthorized(req, res, next) {
 	var bearerToken;
-	console.log(req.headers)
     var bearerHeader = req.headers["authorization"];
     if (typeof bearerHeader !== 'undefined') {
         var bearer = bearerHeader.split(" ");
