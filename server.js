@@ -8,6 +8,8 @@ var app = express();
 var port = process.env.PORT || 3000;
 //var User = require('./models/User');
 
+app.use(express.static("./public"));
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(morgan("dev"));
@@ -19,6 +21,10 @@ res.setHeader('Access-Control-Allow-Origin', '*');
 });
 
 var users = [];
+
+app.get("/", function(req, res) {
+    res.sendFile("./public/index.html");
+});
 
 app.post('/authenticate', function(req, res) {
 	var user;
@@ -96,8 +102,10 @@ function ensureAuthorized(req, res, next) {
     }
 }
 
-app.get('/obtainRecRest', function(req, res){
+app.get('/obtainRecRest', ensureAuthorized, function(req, res){
     //TODO: llamada a la base de datos para obtener restaurantes recomendados
+
+    //ejemplo de json que se envia a las applicacion
     var recRest=[{
         nombre: "La Tablita del Tártaro",
         categoria: "Parrilladas",
@@ -112,6 +120,23 @@ app.get('/obtainRecRest', function(req, res){
 
     res.json({
         data: recRest
+    });
+});
+
+app.get('/obtainRecDish', ensureAuthorized, function(req, res){
+    //TODO: llamada a la base de datos para obtener platos recomendados
+
+    //ejemplo de json que se envia a las applicacion
+    var recDish=[{
+        nombre: "hamburguesa doble",
+        categoria: "Fast Food",
+        calificacion: 3,
+        img: "http://www.elcorral.com/wp-content/uploads/2017/03/Corralazos-Destacado-pagina-WEB.png",
+        descripcion: "contiene tantos ingrdientes etc..."
+    }];
+
+    res.json({
+        data: recDish
     });
 });
 
