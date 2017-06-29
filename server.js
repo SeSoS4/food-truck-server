@@ -2,6 +2,8 @@ var express = require("express");
 var morgan = require("morgan");
 var bodyParser = require("body-parser");
 var jwt = require("jsonwebtoken");
+var Connection = require('tedious').Connection;
+var Request = require('tedious').Request;
 
 var app = express();
 
@@ -20,8 +22,48 @@ res.setHeader('Access-Control-Allow-Origin', '*');
     next();
 });
 
+//conexion sql server
+ var config = {
+    userName: 'test',
+    password: 'test',
+    server: '192.168.1.210',
+    
+    // If you're on Windows Azure, you will need this:
+    options: {encrypt: true}
+};
+
+var connection = new Connection(config);
+
+connection.on('connect', function(err) {
+    // If no error, then good to go...
+      executeStatement();
+    }
+);
+
+//Dummy Users
 var users = [];
 
+//envio del query a ejecucion
+//TODO: implementar atributos a llamar
+function executeStatement() {
+    request = new Request("select 42, 'hello world'", function(err, rowCount) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(rowCount + ' rows');
+        }
+    });
+
+    request.on('row', function(columns) {
+        columns.forEach(function(column) {
+            console.log(column.value);
+        });
+    });
+
+    connection.execSql(request);
+}
+
+//REST
 app.get("/", function(req, res) {
     res.sendFile("./public/index.html");
 });
@@ -104,7 +146,8 @@ function ensureAuthorized(req, res, next) {
 
 app.get('/obtainRecRest', ensureAuthorized, function(req, res){
     //TODO: llamada a la base de datos para obtener restaurantes recomendados
-
+    //llamada a la funcion executeStatement()
+    
     //ejemplo de json que se envia a las applicacion
     var recRest=[{
         nombre: "La Tablita del Tártaro",
@@ -126,7 +169,7 @@ app.get('/obtainRecRest', ensureAuthorized, function(req, res){
 app.get('/obtainRecDish', ensureAuthorized, function(req, res){
     //TODO: llamada a la base de datos para obtener platos recomendados
 
-    //ejemplo de json que se envia a las applicacion
+    //ejemplo de json que se envia a las applicacion 
     var recDish=[{
         nombre: "hamburguesa doble",
         categoria: "Fast Food",
