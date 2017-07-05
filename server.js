@@ -2,8 +2,6 @@ var express = require("express");
 var morgan = require("morgan");
 var bodyParser = require("body-parser");
 var jwt = require("jsonwebtoken");
-var Connection = require('tedious').Connection;
-var Request = require('tedious').Request;
 
 var app = express();
 
@@ -22,46 +20,28 @@ res.setHeader('Access-Control-Allow-Origin', '*');
     next();
 });
 
-//conexion sql server
- var config = {
-    userName: 'test',
-    password: 'test',
-    server: '192.168.1.210',
-    
-    // If you're on Windows Azure, you will need this:
-    options: {encrypt: true}
-};
+//conexion mysql
+var mysql      = require('mysql');
+var connection = mysql.createConnection({
+  host     : 'localhost',
+  user     : 'root',
+  password : '',
+  database : 'trucksvale'
+});
 
-var connection = new Connection(config);
+connection.connect();
 
-connection.on('connect', function(err) {
-    // If no error, then good to go...
-      executeStatement();
-    }
-);
+connection.query('SELECT NOMBRE_LOCAL from local', function(err, rows, fields) {
+  if (!err)
+    console.log('The solution is: ', rows);
+  else
+    console.log('Error while performing Query.');
+});
 
+connection.end();
+ 
 //Dummy Users
 var users = [];
-
-//envio del query a ejecucion
-//TODO: implementar atributos a llamar
-function executeStatement() {
-    request = new Request("select 42, 'hello world'", function(err, rowCount) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log(rowCount + ' rows');
-        }
-    });
-
-    request.on('row', function(columns) {
-        columns.forEach(function(column) {
-            console.log(column.value);
-        });
-    });
-
-    connection.execSql(request);
-}
 
 //REST
 app.get("/", function(req, res) {
