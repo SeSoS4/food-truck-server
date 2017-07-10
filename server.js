@@ -29,16 +29,26 @@ var connection = mysql.createConnection({
   database : 'trucksvale'
 });
 
-connection.connect();
 
-connection.query('SELECT NOMBRE_LOCAL from local', function(err, rows, fields) {
-  if (!err)
-    console.log('The solution is: ', rows);
-  else
-    console.log('Error while performing Query.');
-});
-
-connection.end();
+function selectQuery(username, password, callback){
+    connection.connect();
+    var token = jwt.sign({username: username, password: password}, process.env.JWT_SECRET || 'secreto');
+    connection.query("UPDATE trucksvale.usuarios set TOKEN='"+token+"' where CORRREO_ELECTRONICO='"+username+"'and CLAVE_USUARIO="+password, function(err, result) {
+        if (!err){
+            if (result.affectedRows != 0) {
+                var resJSON = { type: true, usuario: username, token: token};
+                callback(null, resJSON);
+            }else{
+                var resJSON = {type: false, data: "Incorrect email/password"}
+                callback(null, resJSON);
+            }
+            
+        }else{
+            console.log('Error while performing Query.' + err);
+        }
+    });
+    connection.end();
+}
  
 //Dummy Users
 var users = [];
@@ -49,25 +59,10 @@ app.get("/", function(req, res) {
 });
 
 app.post('/authenticate', function(req, res) {
-	var user;
-	for (var i = 0; i < users.length; i++) {
-		if(users[i].email==req.body.email && users[i].password==req.body.password){
-			user=users[i];
-		}
-	}
-
-    if (user) {
-       res.json({
-            type: true,
-            data: user,
-            token: user.token
-        });
-    } else {
-        res.json({
-            type: false,
-            data: "Incorrect email/password"
-        });    
-    }
+    selectQuery(req.body.email, req.body.password, function(err, user){
+        console.log(user);
+        res.json(user);
+    });
 });
 
 app.post('/signin', function(req, res) {
@@ -77,7 +72,6 @@ app.post('/signin', function(req, res) {
 			user=users[i];
 		}
 	}
-
     if (user) {
         res.json({
             type: false,
@@ -105,6 +99,7 @@ app.get('/me', ensureAuthorized, function(req, res) {
             user=users[i];
         }
     }
+    
     res.json({
         type: true,
         data: user
