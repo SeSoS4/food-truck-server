@@ -66,14 +66,61 @@ app.post('/authenticate', function(req, res) {
     });
 });
 
+
+
 app.post('/saveProduct', function(req, res) {
     //connection.connect();
     connection.query("INSERT INTO pedido2(nombre, valor, cant) VALUES ('"+req.body.nombre+"',"+req.body.valor+","+req.body.cantidad+")", function(err, result) {
         if (!err){
             if (result.affectedRows != 0) {
+                console.log(result);
                 res.json({"rest":true});
             }else{
-                var resJSON = {type: false, data: "Incorrect email/password"}
+                var resJSON = {type: false, data: "Error"}
+                res.json({"rest":false});
+            }
+            
+        }else{
+            console.log('Error while performing Query.' + err);
+        }
+    });
+    //connection.end();
+});
+
+app.post('/DeleteAll', function(req, res) {
+    //connection.connect();
+    connection.query("DELETE FROM pedido2", function(err, result) {
+        if (!err){
+            if (result.affectedRows != 0) {
+                res.json({"rest":true});
+            }else{
+                var resJSON = {type: false, data: "Nada que borrar"}
+                res.json({"rest":false});
+            }
+            
+        }else{
+            console.log('Error while performing Query.' + err);
+        }
+    });
+    //connection.end();
+});
+
+app.post('/showInfo', function(req, res) {
+    //connection.connect();
+    connection.query("SELECT * FROM pedido2", function(err, result) {
+        if (!err){
+            if (result.affectedRows != 0) {
+                var resJSON = [];
+                var total=0;
+                for (var i = result.length - 1; i >= 0; i--) {
+                    resJSON.push({nombre: result[i].nombre, valor:result[i].valor, cantidad:result[i].cant, total:(result[i].valor*result[i].cant)});
+                    total=total+(result[i].valor*result[i].cant);
+                }
+                resJSON.push({Total:total});
+                console.log(resJSON);
+                res.json(resJSON);
+            }else{
+                var resJSON = {type: false, data: "Nada que mostrar"}
                 res.json({"rest":false});
             }
             
