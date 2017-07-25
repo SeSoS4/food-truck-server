@@ -30,7 +30,7 @@ var connection = mysql.createConnection({
 });
 
 
-function selectQuery(username, password, callback){
+function authenticateQuery(username, password, callback){
     connection.connect();
     var token = jwt.sign({username: username, password: password}, process.env.JWT_SECRET || 'secreto');
     connection.query("UPDATE trucksvale.usuarios set TOKEN='"+token+"' where CORRREO_ELECTRONICO='"+username+"'and CLAVE_USUARIO="+password, function(err, result) {
@@ -59,10 +59,28 @@ app.get("/", function(req, res) {
 });
 
 app.post('/authenticate', function(req, res) {
-    selectQuery(req.body.email, req.body.password, function(err, user){
+    authenticateQuery(req.body.email, req.body.password, function(err, user){
         console.log(user);
         res.json(user);
     });
+});
+
+app.post('/saveProduct', function(req, res) {
+    connection.connect();
+    connection.query("INSERT INTO pedido2(nombre, valor, cant) VALUES ('"+req.body.nombre+"',"+req.body.valor+","+req.body.cantidad+")", function(err, result) {
+        if (!err){
+            if (result.affectedRows != 0) {
+                res.json({"rest":true});
+            }else{
+                var resJSON = {type: false, data: "Incorrect email/password"}
+                res.json({"rest":false});
+            }
+            
+        }else{
+            console.log('Error while performing Query.' + err);
+        }
+    });
+    connection.end();
 });
 
 app.post('/signin', function(req, res) {
@@ -157,6 +175,7 @@ app.get('/obtainRecDish', ensureAuthorized, function(req, res){
         data: recDish
     });
 });
+
 
 process.on('uncaughtException', function(err) {
 	console.log(err);
