@@ -29,9 +29,10 @@ var connection = mysql.createConnection({
   database : 'trucksvale'
 });
 
+connection.connect();
 
 function authenticateQuery(username, password, callback){
-    connection.connect();
+    //connection.connect();
     var token = jwt.sign({username: username, password: password}, process.env.JWT_SECRET || 'secreto');
     connection.query("UPDATE trucksvale.usuarios set TOKEN='"+token+"' where CORRREO_ELECTRONICO='"+username+"'and CLAVE_USUARIO="+password, function(err, result) {
         if (!err){
@@ -47,7 +48,7 @@ function authenticateQuery(username, password, callback){
             console.log('Error while performing Query.' + err);
         }
     });
-    connection.end();
+    //connection.end();
 }
  
 //Dummy Users
@@ -66,7 +67,7 @@ app.post('/authenticate', function(req, res) {
 });
 
 app.post('/saveProduct', function(req, res) {
-    connection.connect();
+    //connection.connect();
     connection.query("INSERT INTO pedido2(nombre, valor, cant) VALUES ('"+req.body.nombre+"',"+req.body.valor+","+req.body.cantidad+")", function(err, result) {
         if (!err){
             if (result.affectedRows != 0) {
@@ -80,7 +81,7 @@ app.post('/saveProduct', function(req, res) {
             console.log('Error while performing Query.' + err);
         }
     });
-    connection.end();
+    //connection.end();
 });
 
 app.post('/signin', function(req, res) {
